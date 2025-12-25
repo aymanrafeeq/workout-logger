@@ -3,6 +3,7 @@ package handlers
 import (
 	"fitJourney/internal/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,4 +26,33 @@ func AddWorkout(c *gin.Context) {
 
 func GetWorkouts(c *gin.Context) {
 	c.JSON(http.StatusOK, workouts)
+}
+
+func UpdateWorkout(c *gin.Context) {
+	idParam := c.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid workout ID"})
+		return
+	}
+
+	for i, w := range workouts {
+		if w.ID == id {
+			var updatedWorkout models.Workout
+			if err := c.ShouldBindJSON(&updatedWorkout); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			updatedWorkout.ID = id
+
+			workouts[i] = updatedWorkout
+
+			c.JSON(http.StatusOK, updatedWorkout)
+			return
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"error": "workout not found"})
 }

@@ -11,4 +11,6 @@ func RegisterRoutes(r *gin.Engine) {
 
 	r.POST("/workouts", handlers.AddWorkout)
 	r.GET("/workouts", handlers.GetWorkouts)
+	r.PUT("/workouts/:id", handlers.UpdateWorkout)
+
 }
