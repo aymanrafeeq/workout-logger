@@ -1,9 +1,12 @@
 package database
 
 import (
+	"fitJourney/internal/models"
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -11,7 +14,22 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
-	dsn := "host=localhost user=workout_user password=workout_pass dbname=workout_db port=5432 sslmode=disable TimeZone=Asia/Kolkata"
+
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Read env variables
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("DB_PASS")
+	name := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
+
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata",
+		host, user, pass, name, port,
+	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -19,5 +37,11 @@ func ConnectDatabase() {
 	}
 
 	DB = db
-	fmt.Println("Database connected successfully")
+
+	err = DB.AutoMigrate(&models.Workout{})
+	if err != nil {
+		log.Fatal("Database migration failed:", err)
+	}
+
+	fmt.Println("Database connected and migrated successfully")
 }

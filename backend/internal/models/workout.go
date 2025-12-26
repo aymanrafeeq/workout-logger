@@ -1,7 +1,9 @@
 package models
 
+import "gorm.io/gorm"
+
 type Workout struct {
-	ID       int     `json:"id"`
+	gorm.Model
 	Exercise string  `json:"exercise"`
 	Sets     int     `json:"sets"`
 	Reps     int     `json:"reps"`
