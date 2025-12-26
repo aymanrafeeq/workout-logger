@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fitJourney/internal/database"
 	"fitJourney/internal/routes"
 
 	"github.com/gin-gonic/gin"
@@ -9,7 +10,8 @@ import (
 func main() {
 	r := gin.Default()
 
-	routes.RegisterRoutes(r)
+	database.ConnectDatabase()
 
+	routes.RegisterRoutes(r)
 	r.Run(":8080")
 }
