@@ -2,15 +2,23 @@ package handlers
 
 import (
 	"fitJourney/internal/models"
+	"fitJourney/internal/services"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var workouts []models.Workout
+type WorkoutHandler struct {
+	service services.WorkoutService
+}
 
-func AddWorkout(c *gin.Context) {
+func NewWorkoutHandler(service services.WorkoutService) *WorkoutHandler {
+	return &WorkoutHandler{service: service}
+}
+
+// POST /workouts
+func (h *WorkoutHandler) AddWorkout(c *gin.Context) {
 	var workout models.Workout
 
 	if err := c.ShouldBindJSON(&workout); err != nil {
@@ -18,62 +26,60 @@ func AddWorkout(c *gin.Context) {
 		return
 	}
 
-	workout.ID = len(workouts) + 1
-	workouts = append(workouts, workout)
+	if err := h.service.CreateWorkout(&workout); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create workout"})
+		return
+	}
 
 	c.JSON(http.StatusCreated, workout)
 }
 
-func GetWorkouts(c *gin.Context) {
+// GET /workouts
+func (h *WorkoutHandler) GetWorkouts(c *gin.Context) {
+	workouts, err := h.service.GetAllWorkouts()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch workouts"})
+		return
+	}
+
 	c.JSON(http.StatusOK, workouts)
 }
 
-func UpdateWorkout(c *gin.Context) {
-	idParam := c.Param("id")
-
-	id, err := strconv.Atoi(idParam)
+// PUT /workouts/:id
+func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid workout ID"})
 		return
 	}
 
-	for i, w := range workouts {
-		if w.ID == id {
-			var updatedWorkout models.Workout
-			if err := c.ShouldBindJSON(&updatedWorkout); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-
-			updatedWorkout.ID = id
-
-			workouts[i] = updatedWorkout
-
-			c.JSON(http.StatusOK, updatedWorkout)
-			return
-		}
+	var updated models.Workout
+	if err := c.ShouldBindJSON(&updated); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"error": "workout not found"})
+	workout, err := h.service.UpdateWorkout(uint(id), &updated)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, workout)
 }
 
-func DeleteWorkout(c *gin.Context) {
-	idParam := c.Param("id")
-
-	id, err := strconv.Atoi(idParam)
+// DELETE /workouts/:id
+func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid workout ID"})
 		return
 	}
 
-	for i, w := range workouts {
-		if w.ID == id {
-
-			workouts = append(workouts[:i], workouts[i+1:]...)
-
-			c.JSON(http.StatusOK, gin.H{"message": "Workout deleted successfully"})
-			return
-		}
+	if err := h.service.DeleteWorkout(uint(id)); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
 	}
-	c.JSON(http.StatusNotFound, gin.H{"error": "workout not found"})
+
+	c.JSON(http.StatusOK, gin.H{"message": "Workout deleted successfully"})
 }
