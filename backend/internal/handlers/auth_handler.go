@@ -20,6 +20,7 @@ func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 // Register handles user signup
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req struct {
+		Name     string `json:"name"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
@@ -31,7 +32,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// Call service
-	if err := h.authService.Register(req.Email, req.Password); err != nil {
+	if err := h.authService.Register(req.Name, req.Email, req.Password); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

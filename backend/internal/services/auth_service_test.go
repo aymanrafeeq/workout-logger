@@ -47,7 +47,7 @@ func TestAuthService_Register_Success(t *testing.T) {
 	repo := newMockUserRepo()
 	service := NewAuthService(repo)
 
-	err := service.Register("test@example.com", "password123")
+	err := service.Register("user", "test@example.com", "password123")
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -58,8 +58,8 @@ func TestAuthService_Register_UserAlreadyExists(t *testing.T) {
 	repo := newMockUserRepo()
 	service := NewAuthService(repo)
 
-	_ = service.Register("test@example.com", "password123")
-	err := service.Register("test@example.com", "password123")
+	_ = service.Register("user", "test@example.com", "password123")
+	err := service.Register("user", "test@example.com", "password123")
 
 	if err == nil {
 		t.Errorf("expected error, got nil")
@@ -70,7 +70,7 @@ func TestAuthService_Login_Success(t *testing.T) {
 	repo := newMockUserRepo()
 	service := NewAuthService(repo)
 
-	err := service.Register("test@example.com", "password123")
+	err := service.Register("user", "test@example.com", "password123")
 	if err != nil {
 		t.Fatalf("register failed: %v", err)
 	}
@@ -90,7 +90,7 @@ func TestAuthService_Login_WrongPassword(t *testing.T) {
 	repo := newMockUserRepo()
 	service := NewAuthService(repo)
 
-	_ = service.Register("test@example.com", "password123")
+	_ = service.Register("user", "test@example.com", "password123")
 
 	_, err := service.Login("test@example.com", "wrongpassword")
 

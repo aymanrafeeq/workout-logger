@@ -21,7 +21,7 @@ func NewAuthService(userRepo repository.UserRepository) *AuthService {
 }
 
 // Register creates a new user
-func (s *AuthService) Register(email, password string) error {
+func (s *AuthService) Register(name, email, password string) error {
 
 	// Check if user already exists
 	_, err := s.userRepo.FindByEmail(email)
@@ -41,6 +41,7 @@ func (s *AuthService) Register(email, password string) error {
 	}
 
 	user := models.User{
+		Name:     name,
 		Email:    email,
 		Password: hashedPassword,
 	}
