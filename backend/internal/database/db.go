@@ -38,7 +38,7 @@ func ConnectDatabase() {
 
 	DB = db
 
-	err = DB.AutoMigrate(&models.Workout{})
+	err = DB.AutoMigrate(&models.User{}, &models.Workout{})
 	if err != nil {
 		log.Fatal("Database migration failed:", err)
 	}
