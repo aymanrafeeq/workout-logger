@@ -10,6 +10,7 @@ import (
 type WorkoutService interface {
 	CreateWorkout(workout *models.Workout) error
 	GetAllWorkouts() ([]models.Workout, error)
+	GetWorkoutsByUser(userID uint) ([]models.Workout, error)
 	UpdateWorkout(id uint, updated *models.Workout) (*models.Workout, error)
 	DeleteWorkout(id uint) error
 }
@@ -30,6 +31,10 @@ func (s *workoutService) CreateWorkout(workout *models.Workout) error {
 // READ
 func (s *workoutService) GetAllWorkouts() ([]models.Workout, error) {
 	return s.repo.FindAll()
+}
+
+func (s *workoutService) GetWorkoutsByUser(userID uint) ([]models.Workout, error) {
+	return s.repo.FindByUserID(userID)
 }
 
 // UPDATE

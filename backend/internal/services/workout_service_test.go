@@ -36,6 +36,10 @@ func (m *mockWorkoutRepo) FindAll() ([]models.Workout, error) {
 	return list, nil
 }
 
+func (m *mockWorkoutRepo) FindByUserID(userID uint) ([]models.Workout, error) {
+	return []models.Workout{}, nil
+}
+
 func (m *mockWorkoutRepo) FindByID(id uint) (*models.Workout, error) {
 	w, ok := m.workouts[id]
 	if !ok {

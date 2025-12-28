@@ -26,6 +26,9 @@ func (h *WorkoutHandler) AddWorkout(c *gin.Context) {
 		return
 	}
 
+	userID := c.MustGet("user_id").(uint)
+	workout.UserID = userID
+
 	if err := h.service.CreateWorkout(&workout); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create workout"})
 		return
@@ -36,7 +39,10 @@ func (h *WorkoutHandler) AddWorkout(c *gin.Context) {
 
 // GET /workouts
 func (h *WorkoutHandler) GetWorkouts(c *gin.Context) {
-	workouts, err := h.service.GetAllWorkouts()
+
+	userID := c.MustGet("user_id").(uint)
+
+	workouts, err := h.service.GetWorkoutsByUser(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch workouts"})
 		return

@@ -9,4 +9,5 @@ type Workout struct {
 	Reps     int     `json:"reps"`
 	Weight   float64 `json:"weight"`
 	Date     string  `json:"date"`
+	UserID   uint    `json:"-" gorm:"not null"`
 }

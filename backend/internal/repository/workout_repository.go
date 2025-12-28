@@ -8,6 +8,7 @@ import (
 type WorkoutRepository interface {
 	Create(workout *models.Workout) error
 	FindAll() ([]models.Workout, error)
+	FindByUserID(userID uint) ([]models.Workout, error)
 	FindByID(id uint) (*models.Workout, error)
 	Update(workout *models.Workout) error
 	Delete(workout *models.Workout) error
@@ -26,6 +27,14 @@ func (r *workoutRepository) Create(workout *models.Workout) error {
 func (r *workoutRepository) FindAll() ([]models.Workout, error) {
 	var workouts []models.Workout
 	err := database.DB.Find(&workouts).Error
+	return workouts, err
+}
+
+func (r *workoutRepository) FindByUserID(userID uint) ([]models.Workout, error) {
+	var workouts []models.Workout
+	err := database.DB.
+		Where("user_id = ?", userID).
+		Find(&workouts).Error
 	return workouts, err
 }
 
