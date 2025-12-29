@@ -26,7 +26,13 @@ func (h *WorkoutHandler) AddWorkout(c *gin.Context) {
 		return
 	}
 
-	userID := c.MustGet("user_id").(uint)
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "unauthorized"})
+		return
+	}
+	userID := userIDVal.(uint)
+
 	workout.UserID = userID
 
 	if err := h.service.CreateWorkout(&workout); err != nil {
@@ -40,7 +46,12 @@ func (h *WorkoutHandler) AddWorkout(c *gin.Context) {
 // GET /workouts
 func (h *WorkoutHandler) GetWorkouts(c *gin.Context) {
 
-	userID := c.MustGet("user_id").(uint)
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "unauthorized"})
+		return
+	}
+	userID := userIDVal.(uint)
 
 	workouts, err := h.service.GetWorkoutsByUser(userID)
 	if err != nil {

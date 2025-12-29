@@ -3,6 +3,7 @@ package routes
 import (
 	"fitJourney/internal/database"
 	"fitJourney/internal/handlers"
+	"fitJourney/internal/middleware"
 	"fitJourney/internal/repository"
 	"fitJourney/internal/services"
 
@@ -16,10 +17,14 @@ func RegisterRoutes(r *gin.Engine) {
 	service := services.NewWorkoutService(repo)
 	handler := handlers.NewWorkoutHandler(service)
 
-	r.POST("/workouts", handler.AddWorkout)
-	r.GET("/workouts", handler.GetWorkouts)
-	r.PUT("/workouts/:id", handler.UpdateWorkout)
-	r.DELETE("/workouts/:id", handler.DeleteWorkout)
+	workouts := r.Group("/workouts")
+	workouts.Use(middleware.AuthMiddleware())
+	{
+		workouts.POST("", handler.AddWorkout)
+		workouts.GET("", handler.GetWorkouts)
+		workouts.PUT("/:id", handler.UpdateWorkout)
+		workouts.DELETE("/:id", handler.DeleteWorkout)
+	}
 
 	userRepo := repository.NewUserRepository(database.DB)
 	authService := services.NewAuthService(userRepo)
