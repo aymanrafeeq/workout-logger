@@ -6,12 +6,12 @@ import (
 )
 
 type WorkoutRepository interface {
-	Create(workout *models.Workout) error
-	FindAll() ([]models.Workout, error)
-	FindByUserID(userID uint) ([]models.Workout, error)
-	FindByID(id uint) (*models.Workout, error)
-	Update(workout *models.Workout) error
-	Delete(workout *models.Workout) error
+	Create(session *models.WorkoutSession) error
+	FindAll() ([]models.WorkoutSession, error)
+	FindByUserID(userID uint) ([]models.WorkoutSession, error)
+	FindByID(id uint) (*models.WorkoutSession, error)
+	Update(session *models.WorkoutSession) error
+	Delete(session *models.WorkoutSession) error
 }
 
 type workoutRepository struct{}
@@ -20,34 +20,38 @@ func NewWorkoutRepository() WorkoutRepository {
 	return &workoutRepository{}
 }
 
-func (r *workoutRepository) Create(workout *models.Workout) error {
+func (r *workoutRepository) Create(workout *models.WorkoutSession) error {
 	return database.DB.Create(workout).Error
 }
 
-func (r *workoutRepository) FindAll() ([]models.Workout, error) {
-	var workouts []models.Workout
-	err := database.DB.Find(&workouts).Error
-	return workouts, err
+func (r *workoutRepository) FindAll() ([]models.WorkoutSession, error) {
+	var sessions []models.WorkoutSession
+	err := database.DB.Preload("Exercises").Find(&sessions).Error
+	return sessions, err
 }
 
-func (r *workoutRepository) FindByUserID(userID uint) ([]models.Workout, error) {
-	var workouts []models.Workout
+func (r *workoutRepository) FindByUserID(userID uint) ([]models.WorkoutSession, error) {
+	var sessions []models.WorkoutSession
 	err := database.DB.
+		Preload("Exercises"). // <--- CRITICAL: Loads the exercises inside the session
 		Where("user_id = ?", userID).
-		Find(&workouts).Error
-	return workouts, err
+		Order("date desc"). // Sort by newest first
+		Find(&sessions).Error
+	return sessions, err
 }
 
-func (r *workoutRepository) FindByID(id uint) (*models.Workout, error) {
-	var workout models.Workout
-	err := database.DB.First(&workout, id).Error
-	return &workout, err
+func (r *workoutRepository) FindByID(id uint) (*models.WorkoutSession, error) {
+	var session models.WorkoutSession
+	err := database.DB.
+		Preload("Exercises").
+		First(&session, id).Error
+	return &session, err
 }
 
-func (r *workoutRepository) Update(workout *models.Workout) error {
-	return database.DB.Save(workout).Error
+func (r *workoutRepository) Update(session *models.WorkoutSession) error {
+	return database.DB.Save(session).Error
 }
 
-func (r *workoutRepository) Delete(workout *models.Workout) error {
-	return database.DB.Delete(workout).Error
+func (r *workoutRepository) Delete(session *models.WorkoutSession) error {
+	return database.DB.Delete(session).Error
 }

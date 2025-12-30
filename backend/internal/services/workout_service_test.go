@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"fitJourney/internal/models"
 )
@@ -10,37 +11,37 @@ import (
 // -------------------- MOCK REPOSITORY --------------------
 
 type mockWorkoutRepo struct {
-	workouts map[uint]*models.Workout
+	workouts map[uint]*models.WorkoutSession
 	nextID   uint
 }
 
 func newMockRepo() *mockWorkoutRepo {
 	return &mockWorkoutRepo{
-		workouts: make(map[uint]*models.Workout),
+		workouts: make(map[uint]*models.WorkoutSession),
 		nextID:   1,
 	}
 }
 
-func (m *mockWorkoutRepo) Create(workout *models.Workout) error {
+func (m *mockWorkoutRepo) Create(workout *models.WorkoutSession) error {
 	workout.ID = m.nextID
 	m.workouts[m.nextID] = workout
 	m.nextID++
 	return nil
 }
 
-func (m *mockWorkoutRepo) FindAll() ([]models.Workout, error) {
-	var list []models.Workout
+func (m *mockWorkoutRepo) FindAll() ([]models.WorkoutSession, error) {
+	var list []models.WorkoutSession
 	for _, w := range m.workouts {
 		list = append(list, *w)
 	}
 	return list, nil
 }
 
-func (m *mockWorkoutRepo) FindByUserID(userID uint) ([]models.Workout, error) {
-	return []models.Workout{}, nil
+func (m *mockWorkoutRepo) FindByUserID(userID uint) ([]models.WorkoutSession, error) {
+	return []models.WorkoutSession{}, nil
 }
 
-func (m *mockWorkoutRepo) FindByID(id uint) (*models.Workout, error) {
+func (m *mockWorkoutRepo) FindByID(id uint) (*models.WorkoutSession, error) {
 	w, ok := m.workouts[id]
 	if !ok {
 		return nil, errors.New("workout not found")
@@ -48,7 +49,7 @@ func (m *mockWorkoutRepo) FindByID(id uint) (*models.Workout, error) {
 	return w, nil
 }
 
-func (m *mockWorkoutRepo) Update(workout *models.Workout) error {
+func (m *mockWorkoutRepo) Update(workout *models.WorkoutSession) error {
 	if _, ok := m.workouts[workout.ID]; !ok {
 		return errors.New("workout not found")
 	}
@@ -56,7 +57,7 @@ func (m *mockWorkoutRepo) Update(workout *models.Workout) error {
 	return nil
 }
 
-func (m *mockWorkoutRepo) Delete(workout *models.Workout) error {
+func (m *mockWorkoutRepo) Delete(workout *models.WorkoutSession) error {
 	if _, ok := m.workouts[workout.ID]; !ok {
 		return errors.New("workout not found")
 	}
@@ -71,12 +72,17 @@ func TestCreateWorkout(t *testing.T) {
 	repo := newMockRepo()
 	service := NewWorkoutService(repo)
 
-	workout := &models.Workout{
-		Exercise: "Bench Press",
-		Sets:     3,
-		Reps:     10,
-		Weight:   60,
-		Date:     "2025-01-01",
+	workout := &models.WorkoutSession{
+		Name: "Chest Day", // Was 'Exercise'
+		Date: time.Now(),
+		Exercises: []models.WorkoutExercise{
+			{
+				Name:   "Bench Press",
+				Sets:   3,
+				Reps:   10,
+				Weight: 60,
+			},
+		},
 	}
 
 	err := service.CreateWorkout(workout)
@@ -94,8 +100,8 @@ func TestGetAllWorkouts(t *testing.T) {
 	repo := newMockRepo()
 	service := NewWorkoutService(repo)
 
-	_ = service.CreateWorkout(&models.Workout{Exercise: "Squat"})
-	_ = service.CreateWorkout(&models.Workout{Exercise: "Deadlift"})
+	_ = service.CreateWorkout(&models.WorkoutSession{Name: "Leg Day"})
+	_ = service.CreateWorkout(&models.WorkoutSession{Name: "Back Day"})
 
 	workouts, err := service.GetAllWorkouts()
 	if err != nil {
@@ -112,15 +118,12 @@ func TestUpdateWorkout(t *testing.T) {
 	repo := newMockRepo()
 	service := NewWorkoutService(repo)
 
-	_ = service.CreateWorkout(&models.Workout{
-		Exercise: "Bench",
-		Sets:     3,
+	_ = service.CreateWorkout(&models.WorkoutSession{
+		Name: "Morning Workout",
 	})
 
-	updated := &models.Workout{
-		Exercise: "Bench Press",
-		Sets:     4,
-		Reps:     8,
+	updated := &models.WorkoutSession{
+		Name: "Evening Workout", // We are updating the Session Name
 	}
 
 	workout, err := service.UpdateWorkout(1, updated)
@@ -128,8 +131,8 @@ func TestUpdateWorkout(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	if workout.Exercise != "Bench Press" {
-		t.Fatalf("expected updated exercise name")
+	if workout.Name != "Evening Workout" {
+		t.Fatalf("expected updated workout name")
 	}
 }
 
@@ -138,7 +141,7 @@ func TestUpdateWorkout_NotFound(t *testing.T) {
 	repo := newMockRepo()
 	service := NewWorkoutService(repo)
 
-	_, err := service.UpdateWorkout(99, &models.Workout{Exercise: "Test"})
+	_, err := service.UpdateWorkout(99, &models.WorkoutSession{Name: "Test"})
 	if err == nil {
 		t.Fatalf("expected error for non-existing workout")
 	}
@@ -149,7 +152,7 @@ func TestDeleteWorkout(t *testing.T) {
 	repo := newMockRepo()
 	service := NewWorkoutService(repo)
 
-	_ = service.CreateWorkout(&models.Workout{Exercise: "Squat"})
+	_ = service.CreateWorkout(&models.WorkoutSession{Name: "Squat Session"})
 
 	err := service.DeleteWorkout(1)
 	if err != nil {

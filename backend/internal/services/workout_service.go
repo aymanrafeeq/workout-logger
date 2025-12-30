@@ -8,10 +8,10 @@ import (
 )
 
 type WorkoutService interface {
-	CreateWorkout(workout *models.Workout) error
-	GetAllWorkouts() ([]models.Workout, error)
-	GetWorkoutsByUser(userID uint) ([]models.Workout, error)
-	UpdateWorkout(id uint, updated *models.Workout) (*models.Workout, error)
+	CreateWorkout(session *models.WorkoutSession) error
+	GetAllWorkouts() ([]models.WorkoutSession, error)
+	GetWorkoutsByUser(userID uint) ([]models.WorkoutSession, error)
+	UpdateWorkout(id uint, updated *models.WorkoutSession) (*models.WorkoutSession, error)
 	DeleteWorkout(id uint) error
 }
 
@@ -24,45 +24,46 @@ func NewWorkoutService(repo repository.WorkoutRepository) WorkoutService {
 }
 
 // CREATE
-func (s *workoutService) CreateWorkout(workout *models.Workout) error {
+func (s *workoutService) CreateWorkout(workout *models.WorkoutSession) error {
 	return s.repo.Create(workout)
 }
 
 // READ
-func (s *workoutService) GetAllWorkouts() ([]models.Workout, error) {
+func (s *workoutService) GetAllWorkouts() ([]models.WorkoutSession, error) {
 	return s.repo.FindAll()
 }
 
-func (s *workoutService) GetWorkoutsByUser(userID uint) ([]models.Workout, error) {
+func (s *workoutService) GetWorkoutsByUser(userID uint) ([]models.WorkoutSession, error) {
 	return s.repo.FindByUserID(userID)
 }
 
 // UPDATE
-func (s *workoutService) UpdateWorkout(id uint, updated *models.Workout) (*models.Workout, error) {
-	workout, err := s.repo.FindByID(id)
+func (s *workoutService) UpdateWorkout(id uint, updated *models.WorkoutSession) (*models.WorkoutSession, error) {
+	session, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, errors.New("workout not found")
 	}
 
-	workout.Exercise = updated.Exercise
-	workout.Sets = updated.Sets
-	workout.Reps = updated.Reps
-	workout.Weight = updated.Weight
-	workout.Date = updated.Date
+	session.Name = updated.Name
+	session.Date = updated.Date
 
-	if err := s.repo.Update(workout); err != nil {
+	if len(updated.Exercises) > 0 {
+		session.Exercises = updated.Exercises
+	}
+
+	if err := s.repo.Update(session); err != nil {
 		return nil, err
 	}
 
-	return workout, nil
+	return session, nil
 }
 
 // DELETE
 func (s *workoutService) DeleteWorkout(id uint) error {
-	workout, err := s.repo.FindByID(id)
+	session, err := s.repo.FindByID(id)
 	if err != nil {
 		return errors.New("workout not found")
 	}
 
-	return s.repo.Delete(workout)
+	return s.repo.Delete(session)
 }

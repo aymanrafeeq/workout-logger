@@ -19,9 +19,9 @@ func NewWorkoutHandler(service services.WorkoutService) *WorkoutHandler {
 
 // POST /workouts
 func (h *WorkoutHandler) AddWorkout(c *gin.Context) {
-	var workout models.Workout
+	var session models.WorkoutSession
 
-	if err := c.ShouldBindJSON(&workout); err != nil {
+	if err := c.ShouldBindJSON(&session); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -33,14 +33,14 @@ func (h *WorkoutHandler) AddWorkout(c *gin.Context) {
 	}
 	userID := userIDVal.(uint)
 
-	workout.UserID = userID
+	session.UserID = userID
 
-	if err := h.service.CreateWorkout(&workout); err != nil {
+	if err := h.service.CreateWorkout(&session); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create workout"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, workout)
+	c.JSON(http.StatusCreated, session)
 }
 
 // GET /workouts
@@ -70,7 +70,7 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 		return
 	}
 
-	var updated models.Workout
+	var updated models.WorkoutSession
 	if err := c.ShouldBindJSON(&updated); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
