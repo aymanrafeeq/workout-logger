@@ -4,37 +4,44 @@ import {
   LineChart, Line, BarChart, Bar, 
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid 
 } from 'recharts';
-import { TrendingUp, Activity, CalendarCheck, Dumbbell, Filter } from 'lucide-react';
+import { TrendingUp, Activity, CalendarCheck, Dumbbell } from 'lucide-react';
 
 export default function Dashboard() {
   const [workouts, setWorkouts] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState('');
   const [uniqueExercises, setUniqueExercises] = useState([]);
-  
-  // NEW: State for Time Range
   const [chartView, setChartView] = useState('daily'); // 'daily', 'weekly', 'monthly'
-  
   const [stats, setStats] = useState({ totalSets: 0, totalWorkouts: 0 });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await api.get('/workouts');
-        const data = res.data;
-        // Sort data by date ascending first
-        data.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        setWorkouts(data);
+        const sessions = res.data; // Array of WorkoutSession (Nested)
 
-        const exercises = [...new Set(data.map(w => w.exercise))];
+        // --- 1. FLATTEN DATA FOR CHARTS ---
+        // Convert [{session, exercises: [ex1, ex2]}] -> [ex1, ex2, ...]
+        const flatExercises = sessions.flatMap(session => 
+          session.exercises.map(ex => ({
+            ...ex,
+            exercise: ex.name, // Map 'name' -> 'exercise' for chart logic
+            date: session.date
+          }))
+        ).sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        setWorkouts(flatExercises);
+
+        // --- 2. SETUP DROPDOWNS & STATS ---
+        const exercises = [...new Set(flatExercises.map(w => w.exercise))];
         setUniqueExercises(exercises);
         if (exercises.length > 0 && !selectedExercise) {
           setSelectedExercise(exercises[0]); 
         }
 
-        const sets = data.reduce((acc, curr) => acc + curr.sets, 0);
-        const uniqueDays = new Set(data.map(w => w.date.split('T')[0])).size;
-        setStats({ totalSets: sets, totalWorkouts: uniqueDays });
+        const totalSets = flatExercises.reduce((acc, curr) => acc + curr.sets, 0);
+        // Use sessions.length for total workouts count
+        setStats({ totalSets, totalWorkouts: sessions.length });
+
       } catch (err) {
         console.error("Failed to fetch dashboard data");
       }
@@ -42,10 +49,9 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // --- LOGIC: Group Data based on View Mode ---
+  // --- CHART LOGIC 1: CONSISTENCY ---
   const getConsistencyData = () => {
     if (chartView === 'daily') {
-      // Last 7 Active Days
       return workouts.reduce((acc, curr) => {
         const date = curr.date.split('T')[0].slice(5); // "MM-DD"
         const existing = acc.find(a => a.label === date);
@@ -54,42 +60,35 @@ export default function Dashboard() {
         return acc;
       }, []).slice(-7);
     } 
-    
     else if (chartView === 'weekly') {
-      // Group by Week Number
       return workouts.reduce((acc, curr) => {
         const d = new Date(curr.date);
-        // Calculate Week Number
         const onejan = new Date(d.getFullYear(), 0, 1);
         const weekNum = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
         const label = `W${weekNum}`;
-        
         const existing = acc.find(a => a.label === label);
         if (existing) existing.value += curr.sets;
         else acc.push({ label, value: curr.sets });
         return acc;
-      }, []).slice(-8); // Show last 8 weeks
+      }, []).slice(-8);
     } 
-    
     else if (chartView === 'monthly') {
-      // Group by Month Name (e.g., "Jan", "Feb")
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       return workouts.reduce((acc, curr) => {
         const d = new Date(curr.date);
         const label = monthNames[d.getMonth()];
-        
         const existing = acc.find(a => a.label === label);
         if (existing) existing.value += curr.sets;
         else acc.push({ label, value: curr.sets });
         return acc;
-      }, []); // Show all months
+      }, []);
     }
     return [];
   };
 
   const chartData = getConsistencyData();
 
-  // --- CHART 2: Strength Progress (Max Weight per session) ---
+  // --- CHART LOGIC 2: STRENGTH PROGRESS ---
   const strengthData = workouts
     .filter(w => w.exercise === selectedExercise)
     .map(w => ({
@@ -100,12 +99,13 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 pb-20 animate-fade-in">
       
+      {/* HEADER */}
       <div>
         <h1 className="text-3xl font-black italic text-white uppercase tracking-tighter">Dashboard</h1>
         <p className="text-zinc-400">Track your consistency and gains</p>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 shadow-lg flex items-center gap-4">
           <div className="p-3 bg-red-600/10 text-red-500 rounded-lg border border-red-600/20">
@@ -129,7 +129,7 @@ export default function Dashboard() {
 
       <div className="grid lg:grid-cols-2 gap-8">
         
-        {/* CHART 1: Consistency with Time Range Switcher */}
+        {/* CHART 1: CONSISTENCY */}
         <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 shadow-lg">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* CHART 2: Strength Tracker */}
+        {/* CHART 2: STRENGTH TRACKER */}
         <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 shadow-lg">
           <div className="mb-6 flex justify-between items-start">
             <div>
@@ -215,7 +215,7 @@ export default function Dashboard() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-zinc-600">
                 <Dumbbell size={40} className="mb-2 opacity-50" />
-                <p>No data found</p>
+                <p>No data found for this exercise</p>
               </div>
             )}
           </div>
