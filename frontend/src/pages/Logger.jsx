@@ -121,7 +121,7 @@ export default function Logger() {
 
       {/* SESSION NAME INPUT */}
       <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-lg">
-        <label className="text-xs text-zinc-500 font-bold uppercase mb-2 block flex items-center gap-1">
+        <label className="text-xs text-zinc-500 font-bold uppercase mb-2 flex items-center gap-1">
           Session Name <span className="text-red-500">*</span>
         </label>
         <div className="flex items-center gap-3">

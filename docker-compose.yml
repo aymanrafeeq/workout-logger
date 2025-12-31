@@ -1,16 +1,45 @@
 services:
-   postgres:
-     image: postgres:15
-     container_name: workout_postgres
-     restart: always
-     environment:
-       POSTGRES_USER: workout_user
-       POSTGRES_PASSWORD: workout_pass
-       POSTGRES_DB: workout_db
-     ports:
-       - "5432:5432"
-     volumes:
-       - postgres_data:/var/lib/postgresql/data
+  # 1. Database
+  postgres:
+    image: postgres:15
+    container_name: workout_db
+    restart: always
+    environment:
+      POSTGRES_USER: workout_user
+      POSTGRES_PASSWORD: workout_pass
+      POSTGRES_DB: workout_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Go Backend
+  backend:
+    build: ./backend
+    container_name: workout_backend
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      # These overwrite your .env file inside the container
+      DB_HOST: postgres        # Points to the service name above
+      DB_USER: workout_user
+      DB_PASS: workout_pass
+      DB_NAME: workout_db
+      DB_PORT: 5432
+      JWT_SECRET: mysecretkey  # Change this for production
+    ports:
+      - "8080:8080"
+
+  # 3. React Frontend
+  frontend:
+    build: ./frontend
+    container_name: workout_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80" 
 
 volumes:
-  postgres_data:
+  postgres_data:  

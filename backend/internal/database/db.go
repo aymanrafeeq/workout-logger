@@ -15,8 +15,8 @@ var DB *gorm.DB
 
 func ConnectDatabase() {
 
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("Note: .env file not found. Using system environment variables.")
 	}
 
 	// Read env variables
