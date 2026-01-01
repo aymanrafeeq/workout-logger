@@ -199,7 +199,7 @@ export default function Dashboard() {
           </div>
 
           {/* FIX: Added minWidth and explicit height in pixels */}
-          <div className="h-[300px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
