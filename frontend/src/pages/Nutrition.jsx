@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Utensils, Flame, Ban, CheckCircle, ChevronRight, Zap } from 'lucide-react';
+import { Utensils, Flame, Ban, CheckCircle, ShoppingBag, ExternalLink, Zap } from 'lucide-react';
 
 // --- NUTRITION DATA PRESETS ---
 const GUIDES = {
@@ -42,7 +42,6 @@ const GUIDES = {
   maintenance: {
     title: "Body Recomp (Maintenance)",
     desc: "Stay lean while slowly building strength. Eat at maintenance calories with a perfect balance of macros for performance.",
-    // FIXED IMAGE: Reliable Healthy Bowl Image
     image: "https://images.unsplash.com/photo-1543353071-087f985150fb?auto=format&fit=crop&w=800&q=80",
     macros: { protein: "2g per kg", carbs: "Moderate", fats: "Moderate" },
     goodFoods: [
@@ -59,12 +58,37 @@ const GUIDES = {
   }
 };
 
+// --- SHOPPING DATA (INR) ---
+const SUPPLEMENTS = [
+  {
+    name: "Whey Protein Isolate",
+    role: "Muscle Recovery",
+    price: "₹4,899",
+    image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=600&q=80",
+    link: "https://www.amazon.in/s?k=whey+protein+isolate"
+  },
+  {
+    name: "Creatine Monohydrate",
+    role: "Strength & Power",
+    price: "₹1,499",
+    image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=600&q=80",
+    link: "https://www.amazon.in/s?k=creatine+monohydrate"
+  },
+  {
+    name: "Pre-Workout Formula",
+    role: "Energy & Focus",
+    price: "₹1,999",
+    image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=600&q=80",
+    link: "https://www.amazon.in/s?k=pre+workout"
+  }
+];
+
 export default function Nutrition() {
   const [activeTab, setActiveTab] = useState('bulking');
   const data = GUIDES[activeTab];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-20 animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-fade-in">
       
       {/* Header */}
       <div className="text-center md:text-left">
@@ -97,14 +121,13 @@ export default function Nutrition() {
           <div className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 shadow-xl group">
             <div className="h-56 overflow-hidden relative">
               <div className="absolute inset-0 bg-linear-to-t from-zinc-900 to-transparent z-10 opacity-60"></div>
-              {/* IMAGE WITH SAFETY FALLBACK */}
               <img 
                 src={data.image} 
                 alt={data.title} 
                 className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
                 onError={(e) => {
                   e.target.onerror = null; 
-                  e.target.src = "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?auto=format&fit=crop&w=800&q=80"; // Fallback image
+                  e.target.src = "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?auto=format&fit=crop&w=800&q=80"; // Fallback
                 }}
               />
               <div className="absolute bottom-4 left-4 z-20">
@@ -136,7 +159,7 @@ export default function Nutrition() {
         </div>
 
         {/* Right Column: Foods List */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* GOOD FOODS */}
           <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-lg">
@@ -144,12 +167,12 @@ export default function Nutrition() {
               <Zap className="text-green-500" />
               <h3 className="text-xl font-bold text-white">Eat These (Fuel)</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
               {data.goodFoods.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 bg-black/40 rounded-xl border border-zinc-800 hover:border-green-500/50 transition">
-                  <CheckCircle className="text-green-500 shrink-0 mt-0.5" size={18} />
+                <div key={i} className="flex items-start gap-3 p-3 bg-black/40 rounded-lg border border-zinc-800 hover:border-green-500/50 transition">
+                  <CheckCircle className="text-green-500 shrink-0 mt-0.5" size={16} />
                   <div>
-                    <p className="font-bold text-white">{item.name}</p>
+                    <p className="font-bold text-white text-sm">{item.name}</p>
                     <p className="text-xs text-zinc-500">{item.sub}</p>
                   </div>
                 </div>
@@ -161,16 +184,16 @@ export default function Nutrition() {
           <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-lg">
             <div className="flex items-center gap-2 mb-6">
               <Ban className="text-red-500" />
-              <h3 className="text-xl font-bold text-white">Avoid / Limit (Trash)</h3>
+              <h3 className="text-xl font-bold text-white">Avoid / Limit</h3>
             </div>
             <div className="space-y-3">
               {data.badFoods.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-zinc-800 hover:border-red-500/50 transition opacity-80 hover:opacity-100">
-                  <div className="flex items-center gap-3">
-                     <span className="text-red-500 font-bold">×</span>
-                     <span className="text-zinc-300 font-medium">{item.name}</span>
+                <div key={i} className="flex items-start gap-3 p-3 bg-black/40 rounded-lg border border-zinc-800 hover:border-red-500/50 transition opacity-80 hover:opacity-100">
+                  <span className="text-red-500 font-bold text-sm">×</span>
+                  <div>
+                    <p className="font-bold text-zinc-300 text-sm">{item.name}</p>
+                    <p className="text-xs text-zinc-500">{item.sub}</p>
                   </div>
-                  <span className="text-xs text-zinc-500 italic">{item.sub}</span>
                 </div>
               ))}
             </div>
@@ -178,6 +201,41 @@ export default function Nutrition() {
 
         </div>
       </div>
+
+      {/* --- SUPPLEMENT SHOP --- */}
+      <div>
+        <div className="flex items-center gap-2 mb-6">
+          <ShoppingBag className="text-red-600" />
+          <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">Essential Stack</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {SUPPLEMENTS.map((item, i) => (
+            <div key={i} className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 hover:border-red-600 transition-all group relative">
+              <div className="h-40 bg-white rounded-lg mb-4 overflow-hidden relative">
+                <div className="absolute inset-0 bg-black/5 mix-blend-multiply"></div>
+                <img src={item.image} alt={item.name} className="w-full h-full object-contain p-4 group-hover:scale-110 transition duration-500" />
+              </div>
+              
+              <h3 className="text-lg font-bold text-white">{item.name}</h3>
+              <p className="text-sm text-zinc-500 mb-4">{item.role}</p>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-red-500 font-bold">{item.price}</span>
+                <a 
+                  href={item.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-white text-black hover:bg-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold uppercase flex items-center gap-1 transition"
+                >
+                  Buy Now <ExternalLink size={12} />
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
