@@ -1,5 +1,7 @@
 # 🏋️‍♂️ FitJourney - Professional Workout Logger
 
+![FitJourney Banner](https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&h=400&q=80)
+
 > **A full-stack fitness tracking platform built for serious lifters.**  
 > Featuring session-based logging, performance analytics, nutrition guides, and a "Hardcore" dark-mode UI.
 
@@ -15,25 +17,25 @@
 ## 🚀 Features
 
 ### 💪 **Workout Tracking (Session-Based)**
-- **Smart Logging:** Track Weight, Sets, and Reps for multiple exercises in a single session.
-- **Auto-Fill Templates:** One-click templates for Chest Day, Leg Day, Back Day, etc.
-- **Validation:** Strict input validation to prevent incomplete data entries.
+- **Smart Logging:** Track Weight, Sets, and Reps for multiple exercises grouped into specific sessions (e.g., "Leg Day").
+- **Auto-Fill Templates:** Pre-built templates for Chest, Back, Legs, Shoulders, etc., that auto-populate the logging form.
+- **Validation:** Strict input validation to ensure integrity of data (prevents empty sets/reps).
 
 ### 📊 **Advanced Analytics**
-- **Consistency Heatmap:** Visual bar charts tracking volume per day/week/month.
-- **Strength Progression:** Line charts showing max weight increase over time for specific exercises.
-- **PR Wall:** Automatically calculates and displays **Personal Records** (1RM) for every lift.
+- **Consistency Heatmap:** Visual bar charts tracking volume consistency per day, week, and month.
+- **Strength Progression:** Interactive line charts showing max weight increase over time for specific exercises.
+- **PR Wall:** Automatically calculates and displays **Personal Records (1RM)** for every lift based on history.
 
 ### 🍎 **Nutrition & Resources**
-- **Dynamic Guides:** Switch between Bulking, Cutting, and Maintenance modes.
-- **Visual Food Lists:** Categorized lists for "Eat This" vs "Avoid That".
-- **Supplement Store:** Curated stack recommendations with **INR (₹)** pricing and direct shopping links.
-- **Warm-up Library:** Integrated video guides for Upper, Lower, and Full Body mobility.
+- **Dynamic Guides:** Toggleable guides for Bulking, Cutting, and Maintenance.
+- **Visual Food Lists:** High-quality imagery distinguishing "Fuel" foods vs "Trash" foods.
+- **Supplement Store:** Curated stack recommendations with **INR (₹)** pricing and direct Amazon India shopping links.
+- **Warm-up Library:** Integrated video guides for Upper, Lower, and Full Body mobility routines.
 
 ### 🎨 **UI/UX**
 - **"Hardcore" Theme:** Custom Black & Red aesthetic using Tailwind CSS v4 variables.
-- **Interactive Elements:** Floating WhatsApp widget for personal training inquiries.
-- **Responsive Design:** Fully optimized for Mobile and Desktop.
+- **Interactive Elements:** Pulse-effect WhatsApp widget for personal training inquiries.
+- **Responsive Design:** Fully optimized layout for Mobile and Desktop users.
 
 ---
 
@@ -57,58 +59,103 @@
 - **Containerization:** Docker (Multi-stage builds for Go & Node)
 - **Orchestration:** Docker Compose
 - **Proxy:** Nginx (Reverse Proxy for API routing)
+- **Base Images:** Alpine Linux (for minimal footprint)
 
 ---
 
-## ⚡ Quick Start (Docker)
+## 📂 Project Structure
 
-The entire application (Frontend + Backend + DB) is dockerized. You can run it with **one command**.
-
-### Prerequisites
-- Docker & Docker Compose installed.
-
-### Steps
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/aymanrafeeq/workout-logger.git
-   cd workout-logger
-
-2. **Run with Docker Compose**
-   ```bash
-   docker-compose up --build
-    
-
-Access the App
-
-    Frontend: http://localhost (Port 80)
-
-    Backend API: http://localhost:8080
-    
-
- 📂 Project Structure
-code Text
-  
+```text
 workout-logger/
-├── backend/
-│   ├── cmd/api/main.go          # Entry point
-│   ├── internal/
-│   │   ├── database/            # Postgres connection & Migration
-│   │   ├── handlers/            # HTTP Controllers (Gin)
-│   │   ├── middleware/          # JWT Auth Middleware
-│   │   ├── models/              # GORM Structs (User, Session, Exercise)
-│   │   ├── repository/          # Database Queries
-│   │   └── services/            # Business Logic
-│   └── Dockerfile               # Multi-stage Go build
+├── docker-compose.yml           # Orchestrates Backend, Frontend, and Database
+├── .gitignore                   # Git exclusion rules
+├── README.md                    # Documentation
 │
-├── frontend/
-│   ├── src/
-│   │   ├── components/          # Reusable UI (WhatsAppFloat, Navbar)
-│   │   ├── pages/               # Dashboard, Logger, History, Nutrition
-│   │   ├── api.js               # Axios config with Interceptors
-│   │   └── App.jsx              # Routing & Layout
-│   ├── nginx.conf               # Nginx Reverse Proxy Config
-│   └── Dockerfile               # React Build + Nginx setup
+├── backend/                     # Go (Gin) API
+│   ├── Dockerfile               # Multi-stage build (Golang -> Alpine)
+│   ├── go.mod                   # Module definition
+│   ├── go.sum                   # Checksums
+│   ├── cmd/
+│   │   └── api/
+│   │       └── main.go          # Entry point
+│   └── internal/
+│       ├── database/
+│       │   └── db.go            # Postgres connection & Migration
+│       ├── handlers/            # HTTP Controllers
+│       │   ├── auth_handler.go
+│       │   └── workout_handler.go
+│       ├── middleware/
+│       │   └── auth_middleware.go # JWT Protection
+│       ├── models/              # GORM Structs
+│       │   ├── user.go
+│       │   └── workout.go       # Session & Exercise Structs
+│       ├── repository/          # Database Queries
+│       │   ├── user_repository.go
+│       │   └── workout_repository.go
+│       ├── services/            # Business Logic
+│       │   ├── auth_service.go
+│       │   └── workout_service.go
+│       └── utils/               # Helpers
+│           ├── jwt.go
+│           └── password.go
 │
-└── docker-compose.yml           # Orchestration for DB, Backend, Frontend
+└── frontend/                    # React (Vite) Client
+    ├── Dockerfile               # Multi-stage build (Node -> Nginx)
+    ├── nginx.conf               # Reverse Proxy Config
+    ├── package.json             # JS Dependencies
+    ├── vite.config.js           # Vite Config (Proxy & Tailwind)
+    ├── index.html               # HTML Entry
+    └── src/
+        ├── main.jsx             # React Entry
+        ├── App.jsx              # Routing & Layout
+        ├── index.css            # Tailwind Global Styles
+        ├── api.js               # Axios Instance
+        ├── Navbar.jsx           # Navigation Component
+        ├── components/
+        │   └── WhatsAppFloat.jsx # Chat Widget
+        └── pages/
+            ├── Login.jsx        # Auth Page
+            ├── Register.jsx     # Auth Page
+            ├── Dashboard.jsx    # Charts & Stats
+            ├── Programs.jsx     # Templates & Warmups
+            ├── Logger.jsx       # Workout Logging
+            ├── History.jsx      # Session History
+            └── Nutrition.jsx    # Guides & Store
 
-    
+## How to Run
+
+### 1.Clone the Project
+```bash
+git clone https://github.com/aymanrafeeq/workout-logger.git
+cd workout-logger
+```
+
+## 2.Set Environment Configuration
+
+The application relies on environment variables for database access and authentication.
+
+### Create `.env` File
+
+Create a `.env` file in the **root directory** and add the following:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=workout_user
+DB_PASS=workout_pass
+DB_NAME=workout_db
+DB_SSLMODE=disable
+
+JWT_SECRET=supersecretkey
+JWT_EXPIRES_IN=24h
+
+```
+---
+
+## 3.Running the Project with Docker compose
+
+This project is fully containerized and can be started using **Docker Compose**.
+
+```bash
+docker compose up --build -d
+```
